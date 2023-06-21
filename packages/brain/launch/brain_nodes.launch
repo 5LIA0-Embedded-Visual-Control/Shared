@@ -1,0 +1,10 @@
+<launch>
+
+  <group ns="db1">  
+
+    <node pkg="brain" type="brain.py" name="brain_node" output="screen"/>
+
+   </group>
+
+</launch>
+ 
