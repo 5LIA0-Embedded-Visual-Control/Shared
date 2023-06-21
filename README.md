@@ -27,5 +27,3 @@ And then, type "dts devel run -H db1.local"  -- run the image
 you can observe the state of duckiebot by looking at lines shown in terminal.
 
 Loading yolov5 model will take some time, be patient
-
-## Introduction of File
