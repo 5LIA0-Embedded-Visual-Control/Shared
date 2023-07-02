@@ -29,7 +29,7 @@ you can observe the state of duckiebot by looking at lines shown in terminal.
 Loading yolov5 model will take some time, be patient
 
 ## Finite State Machine
-file://FSM(1).png
+![Architecture](FSM(1).png)
 
 ### FindDuck
 Spin for 6 frames out of 10, stop for 4 frames out of 10, instead of spinning all the time.
