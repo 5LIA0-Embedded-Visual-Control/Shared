@@ -40,14 +40,7 @@ class brain(DTROS):
             dt_topic_type=TopicType.DEBUG
         )
 
-        led_topic = f"/{self.veh}/led_emitter_node/led_pattern"
-        self.led_pub = rospy.Publisher(
-            led_topic, 
-            LEDPattern, 
-            queue_size=1,
-            dt_topic_type=TopicType.DRIVER
-        )
-
+        
         # Construct subscribers, receive image from camera
         self.sub_image = rospy.Subscriber(
             f"/{self.veh}/camera_node/image/compressed",
