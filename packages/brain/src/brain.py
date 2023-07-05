@@ -40,7 +40,6 @@ class brain(DTROS):
             dt_topic_type=TopicType.DEBUG
         )
 
-        
         # Construct subscribers, receive image from camera
         self.sub_image = rospy.Subscriber(
             f"/{self.veh}/camera_node/image/compressed",
@@ -157,8 +156,8 @@ class brain(DTROS):
 
         omega = self.Kp * error + self.Ki * self.sum_error + self.Kd * (self.last_error - error)
 
-        if abs(omega) > 2:
-            omega = np.sign(omega) * 2
+        if abs(omega) > 3:
+            return np.sign(omega) * 3
 
         return omega
     
@@ -174,17 +173,41 @@ class brain(DTROS):
 
         # Avoid the obstacle
         if self.state == "Avoidance":
-            if self.avoid < 15:
-                self.SendCommand(image_msg.header, 0.4, self.direction * 4)
-                self.avoid += 1
             
-            elif self.avoid < 30:
-                self.SendCommand(image_msg.header, 0.4, -self.direction * 4)
-                self.avoid += 1
+            # if self.avoid < 20:
+            #     self.SendCommand(image_msg.header, 0.4, self.direction * 6)
+            #     self.avoid += 1
             
-            if self.avoid == 30:
+            # elif self.avoid < 40:
+            #     self.SendCommand(image_msg.header, 0.4, -self.direction * 6)
+            #     self.avoid += 1
+            
+            # if self.avoid == 40:
+            #     self.avoid = 0
+            #     self.state = "Observe"
+
+            if self.direction > 0:
+                if self.avoid < 15:
+                    self.SendCommand(image_msg.header, 0.4, self.direction * 6)
+                    self.avoid += 1
+            
+                elif self.avoid < 40:
+                    self.SendCommand(image_msg.header, 0.4, -self.direction * 6)
+                    self.avoid += 1
+            
+            else:
+                if self.avoid < 25:
+                    self.SendCommand(image_msg.header, 0.4, self.direction * 6)
+                    self.avoid += 1
+            
+                elif self.avoid < 40:
+                    self.SendCommand(image_msg.header, 0.4, -self.direction * 6)
+                    self.avoid += 1
+
+            if self.avoid == 40:
                 self.avoid = 0
-                self.state = "TowardsHouse" if self.pre == "TowardsHouse" else "TowardsDuck"
+                self.state = "Observe"
+
             
             return
         
@@ -219,6 +242,10 @@ class brain(DTROS):
         print(bboxes)
 
         self.ShowResults(classes, bboxes, rgb)
+
+        if self.state == "Observe":
+            self.SendCommand(image_msg.header, 0, 0)
+            self.state = "TowardsHouse" if self.pre == "TowardsHouse" else "TowardsDuck"
 
         # Try to find a duck
         if self.state == "FindDuck":
@@ -278,6 +305,11 @@ class brain(DTROS):
                 self.state = "FindHouse"
                 return
 
+            if (duck_y > 250 and 135 < duck_x and duck_x < 314):
+                self.SendCommand(image_msg.header, 0.05, 0)
+                return
+
+            
             self.SendCommand(image_msg.header, 0.05, self.PIDtowardsObject(duck_x, duck_y))
             print("On my way to the duck!")
 
@@ -336,6 +368,10 @@ class brain(DTROS):
                 self.state = "Backward"
                 time.sleep(5)  
                 return
+            
+            if house_y > 270 and 135 < house_x and house_x < 314:
+                self.SendCommand(image_msg.header, 0.05, 0)
+                return 
 
             self.SendCommand(image_msg.header, 0.05, self.PIDtowardsObject(house_x, house_y))
             print("On my way to house!")
